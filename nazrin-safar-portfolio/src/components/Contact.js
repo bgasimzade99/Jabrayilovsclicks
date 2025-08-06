@@ -26,31 +26,52 @@ const Contact = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate form submission
-    setTimeout(() => {
+    try {
+      const formDataToSend = new FormData();
+      formDataToSend.append('name', formData.name);
+      formDataToSend.append('email', formData.email);
+      formDataToSend.append('subject', formData.subject);
+      formDataToSend.append('message', formData.message);
+
+             const response = await fetch('https://formspree.io/f/xrblywzk', {
+        method: 'POST',
+        body: formDataToSend,
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        setSubmitStatus('success');
+        setFormData({ name: '', email: '', subject: '', message: '' });
+      } else {
+        setSubmitStatus('error');
+      }
+    } catch (error) {
+      console.error('Form submission failed:', error);
+      setSubmitStatus('error');
+    } finally {
       setIsSubmitting(false);
-      setSubmitStatus('success');
-      setFormData({ name: '', email: '', subject: '', message: '' });
       
       // Reset status after 3 seconds
       setTimeout(() => {
         setSubmitStatus(null);
       }, 3000);
-    }, 2000);
+    }
   };
 
   const contactInfo = [
     {
       icon: <FiMail />,
       label: t('email'),
-      value: 'ngasimova7744@ada.edu.az',
-      link: 'mailto:ngasimova7744@ada.edu.az'
+      value: 'nazjabrail@gmail.com',
+      link: 'mailto:nazjabrail@gmail.com'
     },
     {
       icon: <FiPhone />,
       label: t('phone'),
-      value: '+994 55 788 99 96',
-      link: 'tel:+994557889996'
+      value: '+994 55 590 35 84',
+      link: 'tel:+994555903584'
     },
     {
       icon: <FiMapPin />,
@@ -61,8 +82,8 @@ const Contact = () => {
     {
       icon: <FiInstagram />,
       label: t('instagram'),
-      value: '@inspirationights',
-      link: 'https://www.instagram.com/inspirationights?utm_source=ig_web_button_share_sheet&igsh=MTBtZmZvdHJ3djlwYQ=='
+      value: '@jabrailovsclicks',
+      link: 'https://www.instagram.com/jabrailovsclicks?igsh=MWd4bjJjeTN5bW9mMg=='
     }
   ];
 
@@ -199,6 +220,17 @@ const Contact = () => {
                 exit={{ opacity: 0, y: -20 }}
               >
                 {t('thankYouMessage')}
+              </motion.div>
+            )}
+
+            {submitStatus === 'error' && (
+              <motion.div
+                className="error-message"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+              >
+                {t('errorMessage') || 'Bir xəta baş verdi. Zəhmət olmasa yenidən cəhd edin.'}
               </motion.div>
             )}
           </motion.form>
