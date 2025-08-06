@@ -47,23 +47,61 @@ const Admin = () => {
 
   const handleDeploy = async () => {
     try {
-             // Deploy status göstər
-       const deployStatus = language === 'az' ? 'Deploy edilir...' : language === 'ru' ? 'Развертывание...' : language === 'tr' ? 'Yayınlanıyor...' : 'Deploying...';
+      // Deploy status göstər
+      const deployStatus = language === 'az' ? 'Deploy edilir...' : language === 'tr' ? 'Yayınlanıyor...' : 'Deploying...';
       alert(deployStatus);
       
+      // Git commit və push
+      try {
+        // Git add
+        const addResponse = await fetch('http://localhost:3001/api/git/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (!addResponse.ok) {
+          throw new Error('Git add failed');
+        }
+        
+        // Git commit
+        const commitResponse = await fetch('http://localhost:3001/api/git/commit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: `Admin panel updates - ${new Date().toLocaleString()}`
+          })
+        });
+        
+        if (!commitResponse.ok) {
+          throw new Error('Git commit failed');
+        }
+        
+        // Git push
+        const pushResponse = await fetch('http://localhost:3001/api/git/push', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (!pushResponse.ok) {
+          throw new Error('Git push failed');
+        }
+        
+      } catch (gitError) {
+        console.error('Git error:', gitError);
+        // Git xətası olsa da, Netlify deploy-a davam et
+      }
+      
       // Netlify API ilə deploy
-      const netlifySiteId = 'jabrayilovsclicks'; // Netlify site ID
-      const netlifyToken = process.env.REACT_APP_NETLIFY_TOKEN; // Environment variable
+      const netlifySiteId = 'jabrayilovsclicks';
+      const netlifyToken = process.env.REACT_APP_NETLIFY_TOKEN;
       
       if (!netlifyToken) {
         // Əgər token yoxdursa, manual deploy təlimatları göstər
-                 const manualDeployMessage = language === 'az' 
-           ? `🚀 Manual Deploy Təlimatları:\n\n1. GitHub-da dəyişiklikləri commit edin:\n   git add .\n   git commit -m "Admin panel updates"\n   git push origin main\n\n2. Netlify Dashboard-a daxil olun:\n   https://app.netlify.com/sites/jabrayilovsclicks\n\n3. "Trigger deploy" düyməsinə basın\n\n4. Sayt: https://jabrayilovsclicks.netlify.app/\n\nDəyişikliklər 2-3 dəqiqə ərzində canlı olacaq!`
-           : language === 'ru' 
-           ? `🚀 Инструкции по ручному развертыванию:\n\n1. Зафиксируйте изменения в GitHub:\n   git add .\n   git commit -m "Admin panel updates"\n   git push origin main\n\n2. Перейдите в Netlify Dashboard:\n   https://app.netlify.com/sites/jabrayilovsclicks\n\n3. Нажмите кнопку "Trigger deploy"\n\n4. Сайт: https://jabrayilovsclicks.netlify.app/\n\nИзменения будут доступны через 2-3 минуты!`
-           : language === 'tr'
-           ? `🚀 Manuel Yayınlama Talimatları:\n\n1. GitHub'da değişiklikleri commit edin:\n   git add .\n   git commit -m "Admin panel updates"\n   git push origin main\n\n2. Netlify Dashboard'a gidin:\n   https://app.netlify.com/sites/jabrayilovsclicks\n\n3. "Trigger deploy" düğmesine tıklayın\n\n4. Site: https://jabrayilovsclicks.netlify.app/\n\nDeğişiklikler 2-3 dakika içinde canlı olacak!`
-           : `🚀 Manual Deploy Instructions:\n\n1. Commit changes to GitHub:\n   git add .\n   git commit -m "Admin panel updates"\n   git push origin main\n\n2. Go to Netlify Dashboard:\n   https://app.netlify.com/sites/jabrayilovsclicks\n\n3. Click "Trigger deploy" button\n\n4. Website: https://jabrayilovsclicks.netlify.app/\n\nChanges will be live in 2-3 minutes!`;
+        const manualDeployMessage = language === 'az' 
+          ? `🚀 Manual Deploy Təlimatları:\n\n1. GitHub-da dəyişiklikləri commit edin:\n   git add .\n   git commit -m "Admin panel updates"\n   git push origin main\n\n2. Netlify Dashboard-a daxil olun:\n   https://app.netlify.com/sites/jabrayilovsclicks\n\n3. "Trigger deploy" düyməsinə basın\n\n4. Sayt: https://jabrayilovsclicks.netlify.app/\n\nDəyişikliklər 2-3 dəqiqə ərzində canlı olacaq!`
+          : language === 'tr'
+          ? `🚀 Manuel Yayınlama Talimatları:\n\n1. GitHub'da değişiklikleri commit edin:\n   git add .\n   git commit -m "Admin panel updates"\n   git push origin main\n\n2. Netlify Dashboard'a gidin:\n   https://app.netlify.com/sites/jabrayilovsclicks\n\n3. "Trigger deploy" düğmesine tıklayın\n\n4. Site: https://jabrayilovsclicks.netlify.app/\n\nDeğişiklikler 2-3 dakika içinde canlı olacak!`
+          : `🚀 Manual Deploy Instructions:\n\n1. Commit changes to GitHub:\n   git add .\n   git commit -m "Admin panel updates"\n   git push origin main\n\n2. Go to Netlify Dashboard:\n   https://app.netlify.com/sites/jabrayilovsclicks\n\n3. Click "Trigger deploy" button\n\n4. Website: https://jabrayilovsclicks.netlify.app/\n\nChanges will be live in 2-3 minutes!`;
         
         alert(manualDeployMessage);
         return;
@@ -82,13 +120,11 @@ const Admin = () => {
       });
       
       if (response.ok) {
-                 const deployMessage = language === 'az' 
-           ? `✅ Deploy uğurla başladıldı!\n\n🌐 Sayt: https://jabrayilovsclicks.netlify.app/\n\n⏱️ Dəyişikliklər 2-3 dəqiqə ərzində canlı olacaq.\n\n📝 Dəyişikliklər:\n• Sayt Başlığı: ${settings.websiteTitle}\n• Email: ${settings.contactEmail}\n• Telefon: ${settings.phone}\n• Instagram: ${settings.instagram}\n• Facebook: ${settings.facebook}\n• YouTube: ${settings.youtube}`
-           : language === 'ru'
-           ? `✅ Развертывание успешно запущено!\n\n🌐 Сайт: https://jabrayilovsclicks.netlify.app/\n\n⏱️ Изменения будут доступны через 2-3 минуты.\n\n📝 Изменения:\n• Заголовок сайта: ${settings.websiteTitle}\n• Email: ${settings.contactEmail}\n• Телефон: ${settings.phone}\n• Instagram: ${settings.instagram}\n• Facebook: ${settings.facebook}\n• YouTube: ${settings.youtube}`
-           : language === 'tr'
-           ? `✅ Yayınlama başarıyla başlatıldı!\n\n🌐 Site: https://jabrayilovsclicks.netlify.app/\n\n⏱️ Değişiklikler 2-3 dakika içinde canlı olacak.\n\n📝 Değişiklikler:\n• Site Başlığı: ${settings.websiteTitle}\n• Email: ${settings.contactEmail}\n• Telefon: ${settings.phone}\n• Instagram: ${settings.instagram}\n• Facebook: ${settings.facebook}\n• YouTube: ${settings.youtube}`
-           : `✅ Deploy started successfully!\n\n🌐 Website: https://jabrayilovsclicks.netlify.app/\n\n⏱️ Changes will be live in 2-3 minutes.\n\n📝 Changes:\n• Website Title: ${settings.websiteTitle}\n• Email: ${settings.contactEmail}\n• Phone: ${settings.phone}\n• Instagram: ${settings.instagram}\n• Facebook: ${settings.facebook}\n• YouTube: ${settings.youtube}`;
+        const deployMessage = language === 'az' 
+          ? `✅ Deploy uğurla başladıldı!\n\n🌐 Sayt: https://jabrayilovsclicks.netlify.app/\n\n⏱️ Dəyişikliklər 2-3 dəqiqə ərzində canlı olacaq.\n\n📝 Dəyişikliklər:\n• Sayt Başlığı: ${settings.websiteTitle}\n• Email: ${settings.contactEmail}\n• Telefon: ${settings.phone}\n• Instagram: ${settings.instagram}\n• Facebook: ${settings.facebook}\n• YouTube: ${settings.youtube}`
+          : language === 'tr'
+          ? `✅ Yayınlama başarıyla başlatıldı!\n\n🌐 Site: https://jabrayilovsclicks.netlify.app/\n\n⏱️ Değişiklikler 2-3 dakika içinde canlı olacak.\n\n📝 Değişiklikler:\n• Site Başlığı: ${settings.websiteTitle}\n• Email: ${settings.contactEmail}\n• Telefon: ${settings.phone}\n• Instagram: ${settings.instagram}\n• Facebook: ${settings.facebook}\n• YouTube: ${settings.youtube}`
+          : `✅ Deploy started successfully!\n\n🌐 Website: https://jabrayilovsclicks.netlify.app/\n\n⏱️ Changes will be live in 2-3 minutes.\n\n📝 Changes:\n• Website Title: ${settings.websiteTitle}\n• Email: ${settings.contactEmail}\n• Phone: ${settings.phone}\n• Instagram: ${settings.instagram}\n• Facebook: ${settings.facebook}\n• YouTube: ${settings.youtube}`;
         
         alert(deployMessage);
       } else {
@@ -97,7 +133,7 @@ const Admin = () => {
       
     } catch (error) {
       console.error('Deploy error:', error);
-             const errorMessage = language === 'az' 
+      const errorMessage = language === 'az' 
          ? '❌ Deploy xətası baş verdi. Zəhmət olmasa manual deploy edin.\n\n📖 DEPLOYMENT_GUIDE.md faylına baxın.'
          : language === 'ru'
          ? '❌ Произошла ошибка развертывания. Пожалуйста, разверните вручную.\n\n📖 Проверьте файл DEPLOYMENT_GUIDE.md.'
