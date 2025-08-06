@@ -7,6 +7,7 @@ import About from './components/About';
 import Gallery from './components/Gallery';
 import Contact from './components/Contact';
 import FAQ from './components/FAQ';
+import Admin from './components/Admin';
 import Footer from './components/Footer';
 import './App.css';
 
@@ -22,6 +23,7 @@ function App() {
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/faq" element={<FAQ />} />
+            <Route path="/admin" element={<Admin />} />
           </Routes>
           <Footer />
         </div>
